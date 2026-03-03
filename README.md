@@ -27,12 +27,6 @@ pip install libigl polyscope shapely robust_laplacian torchvision==0.18
 conda install -c conda-forge ffmpeg
 ```
 
-**Quick Checks.** Run a minimal example to verify the solver and autograd pipeline:
-
-```bash
-python examples/cross.py
-```
-
 ## Usage
 
 dXPP solves the following QP and computes gradients through the solver via penalty smoothing:
