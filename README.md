@@ -11,7 +11,7 @@ Linghu, Yuxuan, Zhiyuan Liu, and Qi Deng. **"A Penalty Approach for Differentiat
 
 ## Installation
 
-Create a Conda environment with Python 3.9, then install dependencies in order: core packages (PyTorch CPU, SciPy, NumPy, QP solvers), optional QP solver backends, PyTorch Geometric, differentiable QP layers (optnet, qpth, cvxpylayers, proxsuite), and extras for running examples.
+Create a Conda environment with Python 3.9, then install dependencies in order: core packages (PyTorch CPU, SciPy, NumPy, QP solvers), optional QP solver backends, PyTorch Geometric, and extras for running examples.
 
 ```bash
 conda create -y --name dXPP python=3.9
