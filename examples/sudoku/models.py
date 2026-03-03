@@ -16,7 +16,6 @@ import os, sys
 _project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..'))
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
-from deps.dQP import dQP
 from src.dXPP import dXPPLayer
 
 
@@ -82,49 +81,6 @@ class OptNetEq(nn.Module):
 
         return y
 
-
-class dQPEq(nn.Module):
-    def __init__(self, n, Qpenalty, trueInit=False):
-
-        super().__init__()
-
-        nx = (n**2)**3
-        self.Q = Variable(Qpenalty*torch.eye(nx).double())
-        self.Q_idx = spa.csc_matrix(self.Q.detach().cpu().numpy()).nonzero()
-        self.G = Variable(-torch.eye(nx).double())
-        self.h = Variable(torch.zeros(nx).double())
-        t = get_sudoku_matrix(n)
-
-        if trueInit:
-            self.A = Parameter(torch.DoubleTensor(t))
-        else:
-            self.A = Parameter(torch.rand(t.shape).double())
-
-        self.log_z0 = Parameter(torch.zeros(nx).double())
-
-        # ran with defaults 1e-6, 0, 1e-5
-        dQP_settings = dQP.build_settings(qp_solver="gurobi", lin_solver="scipy LU", solve_type="dense", warm_start_from_previous=False)
-        self.solve = dQP.dQP_layer(settings=dQP_settings)
-
-    # @profile
-    def forward(self, puzzles):
-        nBatch = puzzles.size(0)
-
-        p = -puzzles.view(nBatch, -1)
-        b = self.A.mv(self.log_z0.exp())
-
-        # y_compare = QPFunction(verbose=-1)(
-        #     self.Q, p.double(), self.G, self.h, self.A, b
-        # ).float().view_as(puzzles)
-
-        y, _, _, _, _ = self.solve(Q=self.Q, q=torch.squeeze(p.double()), G=self.G, h=self.h, A=self.A, b=b)
-        y = torch.squeeze(y).float().view_as(puzzles)
-
-
-        # print(y_compare)
-        # print(y)
-
-        return y
 
 
 

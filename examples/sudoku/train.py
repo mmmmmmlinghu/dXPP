@@ -60,8 +60,6 @@ def main():
     spOptnetEqP.add_argument('--Qpenalty', type=float, default=0.1)
     optnetEqP = subparsers.add_parser('optnetEq')
     optnetEqP.add_argument('--Qpenalty', type=float, default=0.1)
-    dQPEqP = subparsers.add_parser('dQPEq')
-    dQPEqP.add_argument('--Qpenalty', type=float, default=0.1)
     dXPPEqP = subparsers.add_parser('dXPPEq')
     dXPPEqP.add_argument('--Qpenalty', type=float, default=0.1)
     optnetIneqP = subparsers.add_parser('optnetIneq')
@@ -134,8 +132,6 @@ def main():
         model = models.OptNetIneq(args.boardSz, args.Qpenalty, args.nineq)
     elif args.model == 'optnetLatent':
         model = models.OptNetLatent(args.boardSz, args.Qpenalty, args.nLatent, args.nineq)
-    elif args.model == 'dQPEq':
-        model = models.dQPEq(n=args.boardSz, Qpenalty=args.Qpenalty, trueInit=False)
     elif args.model == 'dXPPEq':
         model = models.dXPPEq(n=args.boardSz, Qpenalty=args.Qpenalty, trueInit=False)
     else:

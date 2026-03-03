@@ -6,12 +6,12 @@ Linghu, Yuxuan, Zhiyuan Liu, and Qi Deng. **"A Penalty Approach for Differentiat
 
 - [Installation](#installation)
 - [Usage](#usage)
-- [Experiments](#experiments)
+- [Examples](#examples)
 - [Citing](#citing)
 
 ## Installation
 
-Create a Conda environment with Python 3.9, then install dependencies in order: core packages (PyTorch CPU, SciPy, NumPy, QP solvers), optional QP solver backends, PyTorch Geometric, differentiable QP layers (optnet, qpth, cvxpylayers, proxsuite), and extras for running examples and experiments.
+Create a Conda environment with Python 3.9, then install dependencies in order: core packages (PyTorch CPU, SciPy, NumPy, QP solvers), optional QP solver backends, PyTorch Geometric, differentiable QP layers (optnet, qpth, cvxpylayers, proxsuite), and extras for running examples.
 
 ```bash
 conda create -y --name dXPP python=3.9
@@ -55,6 +55,8 @@ $$
 | `warm_start`    | `bool`  | Reuse previous primal solution as initialization.                                                                | `True`    |
 | `verbose`       | `bool`  | Print debug information.                                                                                         | `False`   |
 
+### Test
+
 ```python
 import os
 import sys
@@ -86,29 +88,9 @@ print("d(loss)/d(b_data) =", b_data.grad)
 
 ## Examples
 
-### Part 2: Mega Test (Large QP Benchmark)
-
-Scripts live in `experiments/mega_test/`. See [experiments/mega_test/README.md](./experiments/mega_test/README.md) for details.
-
-The workflow is:
-
-1. Generate random data:
-
-```bash
-python experiments/mega_test/create_random_data.py [data_name]
-```
-
-2. Run benchmarks:
-
-```bash
-python experiments/mega_test/mega_exp.py [data_name] [model_name] --nolarge/--onlylarge
-```
-
-3. Plot results:
-
-```bash
-python experiments/mega_test/plot_backward_ratio_panels.py
-```
+- **Sparse QP diagnostic**: [`examples/cross.py`](./examples/cross.py) — loads a sparse QP from file and verifies forward solve and backward gradient.
+- **Geometry**: [`examples/geometry/`](./examples/geometry/) — differentiable harmonic mapping with cone constraints. See [examples/geometry/README.md](./examples/geometry/README.md) for details.
+- **Sudoku**: [`examples/sudoku/`](./examples/sudoku/) — learning Sudoku via differentiable QP layers. See [examples/sudoku/README.md](./examples/sudoku/README.md) for details.
 
 ## Citing
 

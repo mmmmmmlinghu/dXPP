@@ -23,11 +23,6 @@ def visualize_optimization(mapping, opt_data):
     l_reg = np.zeros(np.shape(t))
     time_forward_dXPP = np.zeros(np.shape(t))
     time_backward_dXPP = np.zeros(np.shape(t))
-    time_forward_dQP = np.zeros(np.shape(t))
-    time_backward_dQP = np.zeros(np.shape(t))
-    time_optnet = np.zeros(np.shape(t))
-    time_qplayer = np.zeros(np.shape(t))
-    time_scqpth = np.zeros(np.shape(t))
     time_forward = np.zeros(np.shape(t))
     nActive = np.zeros(np.shape(t))
     for ii in np.arange(0, n_output):
@@ -35,14 +30,7 @@ def visualize_optimization(mapping, opt_data):
         l_reg[ii] = opt_data[str(ii)]["loss_reg"]
         time_forward_dXPP[ii] = opt_data[str(ii)]["dXPP_forward_time"]
         time_backward_dXPP[ii] = opt_data[str(ii)]["dXPP_backward_time"]
-        time_forward_dQP[ii] = opt_data[str(ii)]["dQP_forward_time"]
-        time_backward_dQP[ii] = opt_data[str(ii)]["dQP_backward_time"]
-        time_optnet[ii] = opt_data[str(ii)]["optnet_time"]
-        time_qplayer[ii] = opt_data[str(ii)]["qplayer_time"]
-        time_scqpth[ii] = opt_data[str(ii)]["scqpth_time"]
-
         time_forward[ii] = opt_data[str(ii)]["total_forward_time"]
-
         nActive[ii] = opt_data[str(ii)]["nActive"]
 
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12.0, 6.0))
@@ -57,12 +45,6 @@ def visualize_optimization(mapping, opt_data):
 
     dXPP_forward_line = ax2.plot(t, time_forward_dXPP, c="b", linewidth=2, label='dXPP Forward')
     dXPP_backward_line = ax2.plot(t, time_backward_dXPP, c="b", linewidth=2, linestyle='--', label='dXPP Backward')
-    dQP_forward_line = ax2.plot(t, time_forward_dQP, c="k", label='dQP Forward')
-    dQP_backward_line = ax2.plot(t, time_backward_dQP, c="k", linestyle='--', label='dQP Backward')
-    optnet_line = ax2.plot(t, time_optnet, c="r", label='Optnet Forward')
-    scqpth_line = ax2.plot(t, time_scqpth, c="g", label='SCQPTH Forward')
-    qplayer_line = ax2.plot(t, time_qplayer, c="purple", label='QPLayer Forward')
-
     forward_line = ax2.plot(t, time_forward, c="orange", linestyle=':', label='Total Forward')
 
     ax1.set(xlim=[0, n_output], ylim=[1e-4, 1e1], xlabel='Iteration', ylabel='Loss', yscale='log')
@@ -76,28 +58,15 @@ def visualize_optimization(mapping, opt_data):
                 mapping.dim * mapping.nc) + " #Eq: " + str(mapping.dim * mapping.nb))
     
     ax2.legend()
-    plt.savefig('results/' + mapping.option + '/optimization_' + "_nv=" + str(mapping.nv)  + "_lreg=" + str(mapping.lambda_reg) + '.pdf')  # , dpi=300)
+    plt.savefig('results/' + mapping.option + '/optimization_' + "_nv=" + str(mapping.nv)  + "_lreg=" + str(mapping.lambda_reg) + '.pdf')
     plt.close(fig)
 
     # save into mapping_timings.dat
     if mapping.option == "corner":
-        # columns: nv, nc, dXPP_forward, dXPP_backward, dQP_forward, dQP_backward, optnet, scqpth, qplayer
+        # columns: nv, nc, dXPP_forward, dXPP_backward
         with open("results/corner/mapping_timings.dat", "a+") as f:
             print(mapping.nv, mapping.nc,
-                np.nanmean(time_forward_dXPP), np.nanmean(time_backward_dXPP),
-                np.nanmean(time_forward_dQP), np.nanmean(time_backward_dQP),
-                np.nanmean(time_optnet), np.nanmean(time_scqpth), np.nanmean(time_qplayer), file=f)
-
-
-
-
-
-
-
-
-
-
-
+                np.nanmean(time_forward_dXPP), np.nanmean(time_backward_dXPP), file=f)
 
 
     if mapping.video:
@@ -119,13 +88,6 @@ def visualize_optimization(mapping, opt_data):
         dXPP_backward_line = ax3.plot(1, opt_data["1"]["dXPP_backward_time"], c="b", linewidth=2, linestyle='--',
                                        label='dXPP Backward')
         dXPP_backward_line = dXPP_backward_line[0]
-        dQP_forward_line = ax3.plot(1, opt_data["1"]["dQP_forward_time"], c="k", label='dQP Forward')
-        dQP_forward_line = dQP_forward_line[0]
-        dQP_backward_line = ax3.plot(1, opt_data["1"]["dQP_backward_time"], c="k", linestyle='--',
-                                      label='dQP Backward')
-        dQP_backward_line = dQP_backward_line[0]
-        optnet_line = ax3.plot(1, opt_data["1"]["optnet_time"], c="r", label='Optnet Forward')
-        optnet_line = optnet_line[0]
         forward_line = ax3.plot(1, opt_data["1"]["total_forward_time"], c="orange", linestyle=':', label='Total Forward')
         forward_line = forward_line[0]
 
@@ -159,15 +121,6 @@ def visualize_optimization(mapping, opt_data):
 
             dXPP_backward_line.set_xdata(t[:frame])
             dXPP_backward_line.set_ydata(time_backward_dXPP[:frame])
-
-            dQP_forward_line.set_xdata(t[:frame])
-            dQP_forward_line.set_ydata(time_forward_dQP[:frame])
-
-            dQP_backward_line.set_xdata(t[:frame])
-            dQP_backward_line.set_ydata(time_backward_dQP[:frame])
-
-            optnet_line.set_xdata(t[:frame])
-            optnet_line.set_ydata(time_optnet[:frame])
 
             forward_line.set_xdata(t[:frame])
             forward_line.set_ydata(time_forward[:frame])

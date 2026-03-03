@@ -14,7 +14,7 @@ if _project_root not in sys.path:
 
 from matplotlib import pyplot as plt
 
-from deps.dQP import sparse_helper
+from src.sparse_helper import csc_torch_to_scipy
 
 import torch
 
@@ -225,9 +225,8 @@ class mapping_problem:
         L_init = L_init / torch.linalg.vector_norm(L_init)
         while iter < 10000:
             iter_time = time.time()
-            (L, x_star, nu_star, nu_star_dqp,
-             dXPP_forward_time, dQP_forward_time,
-             optnet_time, scqpth_time, qplayer_time) = laplacian_layer()
+            (L, x_star, nu_star,
+             dXPP_forward_time) = laplacian_layer()
             total_forward_time = time.time() - iter_time
 
             if x_star is None:
@@ -235,56 +234,53 @@ class mapping_problem:
 
             L_prev = L
 
-            # ---------- build the real loss (same structure for both solvers) ----------
+            # ---------- build loss ----------
             L_curr = L.to_sparse_coo().coalesce().values()
             L_curr = L_curr / torch.linalg.norm(L_curr)
             loss_reg = self.lambda_reg*torch.linalg.vector_norm(L_curr - L_init,np.inf) # scale invariant difference
 
             loss_dual = torch.linalg.vector_norm(nu_star)
-            loss = loss_dual + loss_reg                       # dXPP real loss
+            loss = loss_dual + loss_reg
 
-            loss_dual_dqp = torch.linalg.vector_norm(nu_star_dqp)
-            loss_dqp = loss_dual_dqp + loss_reg               # dQP  real loss (same formula)
+            # Track potentially wrong regions as number of flipped triangles.
+            x_curr = x_star.detach().cpu().numpy().reshape((-1, 1))
+            inv_curr = self.compute_inversion(x_curr)
+            n_flipped = int(np.sum(inv_curr == 1)) if inv_curr is not None else -1
 
-            print("Loss: " + str(loss.detach().numpy()))
-
-            nInactive = torch.sum(nu_star < 1e-4) # NOTE STRICT ACTIVE TOLERANCE ... BUT INNACURATE SOLUTION UP TO TOLERANCE=1e-4
+            nInactive = torch.sum(nu_star < 1e-4)
             if nInactive == self.nc*self.dim: # if all inactive
-                if self.lambda_reg == 0:
-                    break
-                else:
-                    break
+                print("[Iter {:04d}] early stop: all cone constraints inactive".format(iter))
+                break
 
-            # ===== dQP backward (comparison — real loss, retain graph) =====
-            optimizer.zero_grad()
-            t = time.time()
-            loss_dqp.backward(retain_graph=True)
-            dQP_backward_time = time.time() - t
-            print("dQP backward: " + str(dQP_backward_time))
-
-            # ===== dXPP backward (main — real loss, used for optimization) =====
+            # ===== dXPP backward =====
             optimizer.zero_grad()
             t = time.time()
             loss.backward()
             dXPP_backward_time = time.time() - t
-            print("dXPP backward: " + str(dXPP_backward_time))
 
             optimizer.step()
 
+            print(
+                "[Iter {:04d}] loss={:.6e} | nFlipped={} | nActive={}/{} | fwd={:.4f}s | bwd={:.4f}s | total={:.4f}s".format(
+                    iter,
+                    float(loss.detach().cpu().numpy()),
+                    n_flipped,
+                    int(self.nc*self.dim - nInactive),
+                    int(self.nc*self.dim),
+                    float(dXPP_forward_time),
+                    float(dXPP_backward_time),
+                    float(total_forward_time),
+                )
+            )
 
             curr_data = {
                 "loss_dual": loss_dual.detach().numpy(),
                 "loss_reg": loss_reg.detach().numpy(),
-                "L" : sparse_helper.csc_torch_to_scipy(L_prev),
+                "L" : csc_torch_to_scipy(L_prev),
                 "x_star": x_star.detach().numpy(),
                 "dXPP_forward_time" : dXPP_forward_time,
                 "dXPP_backward_time" : dXPP_backward_time,
-                "dQP_forward_time" : dQP_forward_time,
-                "dQP_backward_time" : dQP_backward_time,
                 "total_forward_time" : total_forward_time,
-                "optnet_time" : optnet_time,
-                "scqpth_time" : scqpth_time,
-                "qplayer_time": qplayer_time,
                 "nActive": self.nc*self.dim - nInactive
             }
 
@@ -292,7 +288,7 @@ class mapping_problem:
 
             iter += 1
 
-        self.L = sparse_helper.csc_torch_to_scipy(L) # solve_qp takes csc matrix
+        self.L = csc_torch_to_scipy(L) # solve_qp takes csc matrix
 
         x_mapping = solve_qp(P=self.L, q=np.zeros(self.dim * self.nv), A=self.P_boundary, b=self.bvec,
                              G=-self.N_cone_proj @ self.P_cone @ self.L,
@@ -306,13 +302,8 @@ class mapping_problem:
             "x_star": x_mapping,
             "dXPP_forward_time": None,
             "dXPP_backward_time": None,
-            "dQP_forward_time": None,
-            "dQP_backward_time": None,
             "total_forward_time": None,
-            "optnet_time": None,
-            "scqpth_time": None,
-            "qplayer_time": None,
-            "nActive":None
+            "nActive": None
         }
 
         opt_data[str(iter)] = curr_data
@@ -398,6 +389,7 @@ parser.add_argument('example', metavar='example', type=str)
 parser.add_argument('lambda_reg',metavar='lambda_reg', type=float)
 args = parser.parse_args()
 main(lambda_reg=args.lambda_reg,option=args.example)
+print("FINISH: geometry optimization completed for example='{}', lambda_reg={}".format(args.example, args.lambda_reg))
 
 # note, the ant set-up takes a long time (setting up BCS, constructing matrices, etc) but could be improved significantly, we only focus on profiling the QP solve.
 # main(lambda_reg=0,option="cross")

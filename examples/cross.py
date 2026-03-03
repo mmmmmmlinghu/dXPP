@@ -1,9 +1,10 @@
 import os
 import sys
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(PROJECT_ROOT)
 
 from src.dXPP import dXPPLayer
-from deps.dQP.sparse_helper import initialize_torch_from_npz
+from src.sparse_helper import initialize_torch_from_npz
 
 # initialize the penalty-based layer and parameters (assumes Gurobi installed)
 penalty_layer = dXPPLayer(
@@ -13,7 +14,8 @@ penalty_layer = dXPPLayer(
     eps_rel=0.0,
     solve_type="sparse",
 )
-P, q, C, d, A, b = initialize_torch_from_npz("experiments/diagnostic/data/cross.npz")
+data_path = os.path.join(PROJECT_ROOT, "examples", "diagnostic", "data", "cross.npz")
+P, q, C, d, A, b = initialize_torch_from_npz(data_path)
 q = q.reshape(-1)
 d = d.reshape(-1)
 if b is not None:
