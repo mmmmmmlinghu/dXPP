@@ -91,10 +91,12 @@ print("d(loss)/d(b_data) =", b_data.grad)
 If you use dXPP for research, please cite our accompanying paper:
 
 ```latex
-@article{linghu2026penalty,
-  title={A Penalty Approach for Differentiation Through Black-Box Quadratic Programming Solvers},
-  author={Linghu, Yuxuan and Liu, Zhiyuan and Deng, Qi},
-  journal={arXiv preprint arXiv:2602.14154},
-  year={2026}
+@inproceedings{linghu2026penalty,
+  title     = {A Penalty Approach for Differentiation Through Black-Box Quadratic Programming Solvers},
+  author    = {Linghu, Yuxuan and Liu, Zhiyuan and Deng, Qi},
+  booktitle = {Proceedings of the 43rd International Conference on Machine Learning},
+  series    = {Proceedings of Machine Learning Research},
+  volume    = {306},
+  year      = {2026}
 }
 ```
