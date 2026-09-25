@@ -2,7 +2,7 @@
 
 This repository introduces the **dXPP** framework for differentiation through quadratic programming (QP) solvers. The dXPP approach is penalty-based: it employs any black-box QP solver in the forward pass, and, in the backward pass, performs differentiation through a penalty-based reformulation of the original problem.
 
-Linghu, Yuxuan, Zhiyuan Liu, and Qi Deng. **"A Penalty Approach for Differentiation Through Black-Box Quadratic Programming Solvers."** arXiv preprint arXiv:2602.14154, 2026.
+Linghu, Yuxuan, Zhiyuan Liu, and Qi Deng. **"A Penalty Approach for Differentiation Through Black-Box Quadratic Programming Solvers."** *Proceedings of the 43rd International Conference on Machine Learning (ICML 2026)*, 2026.
 
 - [Installation](#installation)
 - [Usage](#usage)
